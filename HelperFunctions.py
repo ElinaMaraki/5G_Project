@@ -13,31 +13,51 @@ def mbps_to_kbps(value):
         return value
 
 def compute_c_index(data, labels):
-    
-    # Compute pairwise Euclidean distances
+
+    '''
+    Compute pairwise Euclidean distances
+    Compute distances of all datapoints with pdist which returns a 1-D array only for the unique pairs
+    Computes the distance between m points using Euclidean distance (2-norm) as the distance metric between the points.
+    The points are arranged as m n-dimensional row vectors in the matrix X.
+    squareform converts between condensed distance matrices and square distance matrices.
+    Create 2-D array for easy indexing.
+    '''
     pairwise_distances = squareform(pdist(data, metric='euclidean'))
 
-    # Collect distances within clusters
     S = []
     all_distances = []
 
+    # Extract distances that are in the same cluster
+    # To avoid double-counting pairs we use only the upper triangular values
     for i in range(len(data)):
-        for j in range(i + 1, len(data)):  # Avoid double-counting pairs
-            if labels[i] == labels[j]:  # Same cluster
+        for j in range(i + 1, len(data)):
+            if labels[i] == labels[j]:
                 S.append(pairwise_distances[i, j])
             all_distances.append(pairwise_distances[i, j])
 
+    '''
+    Convert S (intra-cluster  distances) and all_distances arrays to np arrays
+    '''
     S = np.array(S)
     all_distances = np.array(all_distances)
 
-    # Compute S_min and S_max (smallest and largest possible sums)
+    if len(S) == 0:
+        return 1
+
+    '''
+    Compute S_min and S_max : 
+    max and min distances between all datapoints regardless(no matter within-cluster or between-cluster a distance is)
+    '''
     S_min = np.sum(np.sort(all_distances)[:len(S)])
     S_max = np.sum(np.sort(all_distances)[-len(S):])
 
-    # Compute C-Index
+    if S_max == S_min:
+        return 0
+
     C_index = (np.sum(S) - S_min) / (S_max - S_min)
     return C_index
 
+''' PLOT FUNCTIONS '''
 
 def plot_heatmap(correlation_matrix):
     # Plot heatmap
