@@ -66,13 +66,35 @@ def plot_heatmap(correlation_matrix):
     plt.title("Heatmap of QoS Features")
     plt.show()
 
-def plot_elbow_kmeans(K_range, wcss):
+def plot_elbow_kmeans(elbow_k, K_range, wcss):
     # Plot WSS - num of Clusters to find Elbow
     plt.figure(figsize=(8, 5))
     plt.plot(K_range, wcss, marker='o', linestyle='-')
+    plt.axvline(x=elbow_k, color='r', linestyle='--', label=f'Optimal K={elbow_k}')
     plt.xlabel('Number of clusters')
     plt.ylabel('WCSS (Within-Cluster Sum of Squares)')
     plt.title('Elbow Method for K-Means')
+    plt.show()
+
+def plot_silhouette_scores(silhouette_k, K_range, silhouette_scores, title):
+    plt.figure(figsize=(8, 5))
+    plt.plot(K_range, silhouette_scores, marker='o', linestyle='-')
+    plt.axvline(x=silhouette_k, color='r', linestyle='--', label=f'Optimal K={silhouette_k}')
+    plt.xlabel("Number of Clusters (K)")
+    plt.ylabel("Silhouette Score")
+    plt.title(title)
+    plt.legend()
+    plt.show()
+
+def plot_c_index(c_index_kmeans):
+    # Example data (replace with your actual C-Index values)
+    num_features = list(range(1, len(c_index_kmeans) + 1))  # Number of features or iterations
+    plt.figure(figsize=(8, 5))
+    plt.plot(num_features, c_index_kmeans, marker='o', linestyle='-')
+    plt.xlabel('Number of Features (or Iteration Step)')
+    plt.ylabel('C-Index')
+    plt.title('C-Index vs. Number of Features')
+    plt.grid(True)
     plt.show()
 
 def plot_dendogram(linkage_matrix):
@@ -81,13 +103,14 @@ def plot_dendogram(linkage_matrix):
     dendrogram = sch.dendrogram(linkage_matrix)
     plt.title("Dendrogram")
     plt.xlabel("Data Points")
-    plt.ylabel("Euclidean Distance")
+    plt.ylabel("Linkage Distance")
     plt.show()
 
-def plot_elbow_ward(num_clusters, distances):
+def plot_elbow_ward(hier_elbow_k, num_clusters, distances):
     plt.figure(figsize=(8, 5))
     plt.plot(num_clusters, distances, marker='o', linestyle='-')
+    plt.axvline(x=hier_elbow_k, color='r', linestyle='--', label=f'Optimal K={hier_elbow_k}')
     plt.xlabel("Number of Clusters")
     plt.ylabel("Ward Linkage Distance")
-    plt.title("Elbow Method for Ward Linkage")
+    plt.title("Elbow Method for for Hierarchical Clustering(Ward)")
     plt.show()
