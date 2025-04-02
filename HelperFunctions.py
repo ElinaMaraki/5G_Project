@@ -86,6 +86,14 @@ def plot_silhouette_scores(silhouette_k, K_range, silhouette_scores, title):
     plt.legend()
     plt.show()
 
+'''
+Experimenting with c-index and different optimal values
+plot_c_index(c_index_kmeans)
+kneedle_ci = KneeLocator(list(K_range), c_index_kmeans, curve="convex", direction="decreasing")
+# Get the elbow point (optimal k)
+elbow = kneedle_ci.elbow
+print(f"The optimal is: {elbow}")
+'''
 def plot_c_index(c_index_kmeans):
     # Example data (replace with your actual C-Index values)
     num_features = list(range(1, len(c_index_kmeans) + 1))  # Number of features or iterations
