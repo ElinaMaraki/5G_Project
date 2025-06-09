@@ -4,6 +4,9 @@ from scipy.spatial.distance import pdist, squareform
 import matplotlib.pyplot as plt
 import scipy.cluster.hierarchy as sch
 import seaborn as sns
+from matplotlib.patches import Ellipse
+from matplotlib.colors import ListedColormap
+
 
 def mbps_to_kbps(value):
     if 'Mbps' in value:
@@ -66,6 +69,15 @@ def plot_heatmap(correlation_matrix):
     plt.title("Heatmap of QoS Features")
     plt.show()
 
+def plot_app_heatmap(dist_df, title):
+    plt.figure(figsize=(8, 5))
+    sns.heatmap(dist_df, annot=True, cmap='Blues', fmt=".1f")
+    plt.title(title)
+    plt.ylabel('Cluster')
+    plt.xlabel('Application Type')
+    plt.tight_layout()
+    plt.show()
+
 def plot_elbow_kmeans(elbow_k, K_range, wcss):
     # Plot WSS - num of Clusters to find Elbow
     plt.figure(figsize=(8, 5))
@@ -86,14 +98,6 @@ def plot_silhouette_scores(silhouette_k, K_range, silhouette_scores, title):
     plt.legend()
     plt.show()
 
-'''
-Experimenting with c-index and different optimal values
-plot_c_index(c_index_kmeans)
-kneedle_ci = KneeLocator(list(K_range), c_index_kmeans, curve="convex", direction="decreasing")
-# Get the elbow point (optimal k)
-elbow = kneedle_ci.elbow
-print(f"The optimal is: {elbow}")
-'''
 def plot_c_index(c_index_kmeans):
     # Example data (replace with your actual C-Index values)
     num_features = list(range(1, len(c_index_kmeans) + 1))  # Number of features or iterations
@@ -122,3 +126,26 @@ def plot_elbow_ward(hier_elbow_k, num_clusters, distances):
     plt.ylabel("Ward Linkage Distance")
     plt.title("Elbow Method for for Hierarchical Clustering(Ward)")
     plt.show()
+
+def plot_confidence_ellipses(ax, data, labels, color_map):
+    for label, color in color_map.items():
+        cluster_data = data[labels == label]
+        if len(cluster_data) < 2:
+            continue
+
+        cov = np.cov(cluster_data, rowvar=False)
+        mean = cluster_data.mean(axis=0)
+        eigenvals, eigenvecs = np.linalg.eigh(cov)
+        order = eigenvals.argsort()[::-1]
+        eigenvals, eigenvecs = eigenvals[order], eigenvecs[:, order]
+        theta = np.degrees(np.arctan2(eigenvecs[1, 0], eigenvecs[0, 0]))
+        width, height = 2 * np.sqrt(5.991 * eigenvals[:2])  # 95% confidence
+
+        ellipse = Ellipse(xy=mean, width=width, height=height, angle=theta,
+                          edgecolor=color, fc='none', lw=2)
+        ax.add_patch(ellipse)
+
+def cluster_application_distribution(df_in, cluster_col):
+    summary = df_in.groupby(cluster_col)['Application_Type'].value_counts(normalize=True).unstack().fillna(0)
+    return (summary * 100).round(2)  #Percentages
+
